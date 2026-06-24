@@ -1,0 +1,241 @@
+:root {
+            --bg-color: #1a1e21; /* Fondo oscuro elegante alineado al logo */
+            --card-bg: #24292e;
+            --text-color: #ffffff;
+            --text-muted: #a0aec0;
+            --primary-green: #2ecc71; /* Verde tech principal */
+            --accent-orange: #f39c12; /* Toque naranja del gradiente */
+            --gradient: linear-gradient(135deg, #2ecc71 0%, #00bc8c 50%, #f39c12 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Encabezado / Logo */
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 0 20px 0;
+        }
+
+        .logo-container {
+            text-align: center;
+        }
+
+        /* REFERENCIA DEL LOGO EN CARPETA PUBLIC */
+        .logo-img {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 10px;
+            filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));
+            
+            }
+
+        .card {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 10px;
+            /*filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));*/
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before{
+            content: '';
+            position: absolute;
+            height: auto;
+            width: auto;
+            background: conic-gradient(
+                transparent,
+                transparent,
+                transparent,
+                #2eec71 );
+            animation: rotate 3s linear;
+        }
+
+        .card::after  {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 160px;
+
+        }
+
+        @keyframes rotate{
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 40px 0 60px 0;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px auto;
+        }
+
+        /* Sección Servicios */
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .service-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.1);
+            border-color: rgba(46, 204, 113, 0.3);
+        }
+
+        .service-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .service-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Enlaces de Contacto / Botones */
+        .contact-section {
+            text-align: center;
+            background: rgba(36, 41, 46, 0.6);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            margin-bottom: 60px;
+        }
+
+        .contact-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .btn-container {
+                flex-direction: row;
+                gap: 20px;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 280px;
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Estilos específicos por red/contacto */
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: #fff;
+        }
+        .btn-whatsapp:hover {
+            background-color: #20ba56;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+
+        .btn-instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: #fff;
+        }
+        .btn-instagram:hover {
+            opacity: 0.9;
+            box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4);
+        }
+
+        .btn-email {
+            background-color: #ffffff;
+            color: #1a1e21;
+        }
+        .btn-email:hover {
+            background-color: #e2e8f0;
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        footer span {
+            color: var(--primary-green);
+        }

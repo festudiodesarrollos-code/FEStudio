@@ -1,15 +1,16 @@
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
-  
+
   // Estados para Administrador
   const [adminData, setAdminData] = useState({ queries: [], tickets: [] });
   const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
   const [adminError, setAdminError] = useState('');
-  
+
   // Estados para Cliente
   const [ticketSubject, setTicketSubject] = useState('');
   const [ticketDesc, setTicketDesc] = useState('');
@@ -18,7 +19,7 @@ export default function Dashboard() {
 
   const fetchAdminData = useCallback(async () => {
     if (!profile?.is_superuser) return;
-    
+
     setIsLoadingAdmin(true);
     setAdminError('');
     try {
@@ -34,11 +35,11 @@ export default function Dashboard() {
         }
       });
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
-        setAdminData({ 
-          queries: Array.isArray(data.queries) ? data.queries : [], 
-          tickets: Array.isArray(data.tickets) ? data.tickets : [] 
+        setAdminData({
+          queries: Array.isArray(data.queries) ? data.queries : [],
+          tickets: Array.isArray(data.tickets) ? data.tickets : []
         });
       } else {
         setAdminError(data.error || 'Error al recuperar información del dashboard.');
@@ -65,7 +66,7 @@ export default function Dashboard() {
   const handleSupportRequest = async (e) => {
     e.preventDefault();
     setIsSubmittingTicket(true);
-    setClientMsg('Enviando...');
+    setClientMsg('Enviando ticket...');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -76,7 +77,7 @@ export default function Dashboard() {
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tickets`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
@@ -105,94 +106,185 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-dark text-white">
-      <header className="glass-card border-b border-gray-800 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <img src="/assets/logo.png" className="w-10 h-10 rounded-full border border-brand-accent/50" alt="FEStudio Desarrollos" />
-          <div>
-            <h1 className="text-white font-bold">{profile?.is_superuser ? 'Portal Administrador' : 'Portal Cliente'}</h1>
-            <p className="text-xs text-gray-400">{profile?.email || user?.email}</p>
+    <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased flex flex-col justify-between selection:bg-brand-accent selection:text-gray-900">
+      
+      {/* Header Dashboard con estética del template */}
+      <header className="sticky top-0 z-50 glass-card border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-brand-accent p-0.5 group-hover:border-brand-cyan transition duration-300">
+                <img 
+                  src="/assets/logo.png" 
+                  onError={(e) => { e.currentTarget.src = 'https://placehold.co/100x100/161d2f/10b981?text=FE'; }} 
+                  alt="FEStudio Logo" 
+                  className="w-full h-full object-cover rounded-full" 
+                />
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-green-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">FEStudio</span>
+                <span className="block text-xs font-semibold tracking-widest text-gray-400 -mt-1">desarrollos</span>
+              </div>
+            </Link>
+
+            <div className="h-8 w-px bg-gray-800 mx-2 hidden sm:block"></div>
+
+            <div>
+              <h1 className="text-sm font-bold text-white flex items-center">
+                {profile?.is_superuser ? 'Portal Administrador' : 'Portal Cliente'}
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1"></span>
+                  Conectado
+                </span>
+              </h1>
+              <p className="text-xs text-gray-400">{profile?.email || user?.email}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <Link 
+              to="/" 
+              className="hidden md:inline-flex items-center px-3 py-1.5 bg-gray-800/80 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-semibold transition border border-gray-700"
+            >
+              <i className="fas fa-home mr-1.5 text-brand-cyan"></i> Sitio Web
+            </Link>
+            <button 
+              onClick={handleLogout} 
+              className="px-3.5 py-1.5 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 text-xs font-semibold transition flex items-center"
+            >
+              <i className="fas fa-sign-out-alt mr-1.5"></i> Cerrar Sesión
+            </button>
           </div>
         </div>
-        <button onClick={handleLogout} className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/40 rounded-lg hover:bg-red-500/30 text-xs font-semibold transition">
-          <i className="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
-        </button>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="glass-card rounded-2xl p-6 border border-gray-700/60 shadow-2xl">
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div className="glass-card rounded-2xl p-6 sm:p-8 border border-gray-700/60 shadow-2xl">
           
           {profile?.is_superuser ? (
-            /* --- VISTA DE SUPER USUARIO --- */
+            /* --- VISTA DE SUPER USUARIO (ADMIN) --- */
             <div>
-              <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                <h3 className="text-lg font-bold text-white">
-                  <i className="fas fa-chart-line text-brand-accent mr-2"></i> Gestión Global
-                </h3>
-                <div className="flex items-center space-x-3">
-                  {isLoadingAdmin && <span className="text-xs text-gray-400">Actualizando...</span>}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-800">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    <i className="fas fa-chart-line text-emerald-400 mr-2"></i> Gestión Global de la Plataforma
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Estado de la base de datos Supabase: <span className="text-emerald-400 font-semibold">Conectado</span>
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3 w-full md:w-auto">
+                  {isLoadingAdmin && <span className="text-xs text-gray-400 animate-pulse">Sincronizando...</span>}
                   <button 
-                    onClick={fetchAdminData}
+                    onClick={fetchAdminData} 
                     disabled={isLoadingAdmin}
-                    className="px-3 py-1 bg-brand-card hover:bg-gray-800 border border-gray-700 text-xs rounded-lg transition"
-                    title="Recargar datos"
+                    className="flex-1 md:flex-initial px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg hover:bg-cyan-500/30 text-xs font-semibold transition"
                   >
-                    <i className="fas fa-sync-alt mr-1"></i> Actualizar
+                    <i className="fas fa-sync-alt mr-1.5"></i> Actualizar Datos
                   </button>
                 </div>
               </div>
 
               {adminError && (
-                <div className="mb-6 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-xs">
-                  {adminError}
+                <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center">
+                  <i className="fas fa-exclamation-triangle mr-2"></i>
+                  <span>{adminError}</span>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Data Tables Preview en 2 Columnas idéntico al sandbox del template */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
                 
-                {/* Consultas de Potenciales Clientes */}
-                <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center">
-                    <i className="fas fa-envelope text-brand-cyan mr-2"></i> Consultas de Presupuesto
-                    <span className="ml-2 text-xs bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded-full">
-                      {adminData.queries.length}
+                {/* Tabla 1: Consultas de Presupuesto */}
+                <div className="bg-brand-dark/80 rounded-xl p-5 border border-gray-800">
+                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
+                    <span className="flex items-center">
+                      <i className="fas fa-envelope text-cyan-400 mr-2"></i> Consultas de Presupuesto
+                    </span>
+                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400 font-mono">
+                      {adminData.queries.length} Consultas
                     </span>
                   </h4>
-                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    {adminData.queries.map(q => (
-                      <div key={q.id} className="p-3 bg-gray-800/50 rounded border-l-4 border-brand-cyan">
-                        <div className="flex justify-between">
-                          <p className="text-xs text-white font-bold">{q.full_name}</p>
-                          <span className="text-[10px] text-gray-400">{new Date(q.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-xs text-brand-cyan mb-1">{q.email}</p>
-                        <p className="text-xs text-gray-400 italic">"{q.requirements}"</p>
-                      </div>
-                    ))}
-                    {adminData.queries.length === 0 && <p className="text-xs text-gray-500">No hay consultas registradas.</p>}
+
+                  <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                    {adminData.queries.length > 0 ? (
+                      <table className="w-full text-left text-xs text-gray-300">
+                        <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold sticky top-0">
+                          <tr>
+                            <th className="p-2.5">Cliente</th>
+                            <th className="p-2.5">Requerimientos</th>
+                            <th className="p-2.5">Fecha</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800">
+                          {adminData.queries.map(q => (
+                            <tr key={q.id} className="hover:bg-gray-800/30 transition">
+                              <td className="p-2.5">
+                                <p className="font-semibold text-white">{q.full_name}</p>
+                                <a href={`mailto:${q.email}`} className="text-cyan-400 text-[11px] hover:underline">
+                                  {q.email}
+                                </a>
+                              </td>
+                              <td className="p-2.5 text-gray-400 max-w-xs truncate" title={q.requirements}>
+                                "{q.requirements}"
+                              </td>
+                              <td className="p-2.5 text-gray-400 whitespace-nowrap text-[11px]">
+                                {new Date(q.created_at).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="text-xs text-gray-500 py-6 text-center italic">No hay consultas de presupuesto pendientes.</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Tickets de Soporte */}
-                <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center">
-                    <i className="fas fa-headset text-brand-amber mr-2"></i> Tickets de Soporte
-                    <span className="ml-2 text-xs bg-brand-amber/20 text-brand-amber px-2 py-0.5 rounded-full">
-                      {adminData.tickets.length}
+                {/* Tabla 2: Tickets de Soporte */}
+                <div className="bg-brand-dark/80 rounded-xl p-5 border border-gray-800">
+                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
+                    <span className="flex items-center">
+                      <i className="fas fa-headset text-amber-400 mr-2"></i> Tickets de Soporte
+                    </span>
+                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400 font-mono">
+                      {adminData.tickets.length} Tickets
                     </span>
                   </h4>
-                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    {adminData.tickets.map(t => (
-                      <div key={t.id} className="p-3 bg-gray-800/50 rounded border-l-4 border-brand-amber">
-                        <div className="flex justify-between">
-                          <p className="text-xs text-white font-bold">{t.subject}</p>
-                          <span className="text-[10px] bg-brand-amber/20 text-brand-amber px-2 rounded-full">{t.status || 'abierto'}</span>
-                        </div>
-                        <p className="text-xs text-brand-amber mb-1">Cliente: {t.profiles?.email || 'Desconocido'}</p>
-                        <p className="text-xs text-gray-400">{t.description}</p>
-                      </div>
-                    ))}
-                    {adminData.tickets.length === 0 && <p className="text-xs text-gray-500">No hay tickets activos.</p>}
+
+                  <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                    {adminData.tickets.length > 0 ? (
+                      <table className="w-full text-left text-xs text-gray-300">
+                        <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold sticky top-0">
+                          <tr>
+                            <th className="p-2.5">Asunto / Cliente</th>
+                            <th className="p-2.5">Descripción</th>
+                            <th className="p-2.5">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800">
+                          {adminData.tickets.map(t => (
+                            <tr key={t.id} className="hover:bg-gray-800/30 transition">
+                              <td className="p-2.5">
+                                <p className="font-semibold text-white">{t.subject}</p>
+                                <span className="text-[11px] text-amber-400">{t.profiles?.email || 'Cliente'}</span>
+                              </td>
+                              <td className="p-2.5 text-gray-400 max-w-xs truncate" title={t.description}>
+                                {t.description}
+                              </td>
+                              <td className="p-2.5 whitespace-nowrap">
+                                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full text-[10px] font-medium">
+                                  {t.status || 'Activo'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="text-xs text-gray-500 py-6 text-center italic">No hay tickets de soporte activos.</p>
+                    )}
                   </div>
                 </div>
 
@@ -201,40 +293,77 @@ export default function Dashboard() {
           ) : (
             /* --- VISTA DE USUARIO / CLIENTE --- */
             <div>
-              <h3 className="text-lg font-bold text-white mb-6 border-b border-gray-800 pb-4">
-                <i className="fas fa-life-ring text-brand-amber mr-2"></i> Soporte Técnico
-              </h3>
+              <div className="pb-6 border-b border-gray-800">
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium mb-3">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span>Mesa de Ayuda & Asistencia</span>
+                </div>
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <i className="fas fa-life-ring text-brand-amber mr-2"></i> Centro de Soporte Técnico
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  Genera una solicitud de soporte para resolver incidencias técnicas, reportar bugs o solicitar ajustes.
+                </p>
+              </div>
 
-              <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 mt-4 max-w-2xl">
-                <p className="text-sm text-gray-400 mb-4">Genera un ticket de soporte y nuestro equipo técnico lo atenderá a la brevedad.</p>
-                
+              <div className="mt-8 max-w-2xl bg-brand-dark/80 rounded-xl p-6 border border-gray-800 shadow-xl">
                 <form onSubmit={handleSupportRequest} className="space-y-4">
-                  <input 
-                    type="text" required placeholder="Asunto del problema" 
-                    value={ticketSubject} onChange={e => setTicketSubject(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white text-sm focus:outline-none focus:border-brand-amber" 
-                  />
-                  <textarea 
-                    rows="3" required placeholder="Describe el problema en detalle..." 
-                    value={ticketDesc} onChange={e => setTicketDesc(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white text-sm focus:outline-none focus:border-brand-amber"
-                  ></textarea>
-                  
-                  {clientMsg && <p className="text-brand-amber text-xs font-medium">{clientMsg}</p>}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Asunto del Problema</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ej: Error al conectar la base de datos o fallo en el login" 
+                      value={ticketSubject} 
+                      onChange={e => setTicketSubject(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-brand-amber transition" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Descripción Detallada</label>
+                    <textarea 
+                      rows="4" 
+                      required 
+                      placeholder="Describe qué ocurrió, pasos para reproducir el problema y el comportamiento esperado..." 
+                      value={ticketDesc} 
+                      onChange={e => setTicketDesc(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-brand-amber transition" 
+                    ></textarea>
+                  </div>
+
+                  {clientMsg && (
+                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs">
+                      {clientMsg}
+                    </div>
+                  )}
 
                   <button 
                     type="submit" 
                     disabled={isSubmittingTicket}
-                    className="px-6 py-2 bg-brand-amber/20 text-brand-amber border border-brand-amber/40 rounded-lg text-sm font-semibold hover:bg-brand-amber/30 transition disabled:opacity-50"
+                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold rounded-xl transition glow-effect disabled:opacity-50 text-sm"
                   >
-                    {isSubmittingTicket ? 'Enviando...' : 'Enviar Ticket'}
+                    {isSubmittingTicket ? 'Registrando Ticket...' : 'Enviar Ticket de Soporte'}
                   </button>
                 </form>
               </div>
             </div>
           )}
+
         </div>
       </main>
+
+      {/* Footer Dashboard */}
+      <footer className="bg-brand-dark border-t border-gray-800/80 py-6 text-center text-xs text-gray-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <span>&copy; 2026 <strong>FEStudio Desarrollos</strong>. Panel de Gestión.</span>
+          <div className="flex space-x-4">
+            <Link to="/" className="text-gray-400 hover:text-brand-accent transition">Inicio</Link>
+            <a href="mailto:festudio.desarrollos@gmail.com" className="text-gray-400 hover:text-cyan-400 transition">Soporte Directo</a>
+          </div>
+        </div>
+      </footer>
+
     </div>
   );
 }

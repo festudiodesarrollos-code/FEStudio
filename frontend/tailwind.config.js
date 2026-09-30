@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -10,9 +11,9 @@ export default {
         brand: {
           dark: '#0e131f',
           card: '#161d2f',
-          accent: '#10b981', // Neon/Green
-          cyan: '#06b6d4',   // Tech Cyan
-          amber: '#f59e0b',  // Glow Accent
+          accent: '#10b981', 
+          cyan: '#06b6d4',   
+          amber: '#f59e0b',  
           text: '#f3f4f6'
         }
       }

@@ -2,9 +2,33 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Page() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Estados del formulario de presupuesto / contacto funcional
   const [formData, setFormData] = useState({ full_name: '', email: '', requirements: '' });
   const [statusMsg, setStatusMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Estados para la demostración interactiva de Apps y Licencias (del template)
+  const [apps, setApps] = useState([
+    { name: 'FEStudio CRM', url: 'https://crm.festudio.dev', status: 'Activo' },
+    { name: 'GestionStock Pro', url: 'https://stock.festudio.dev', status: 'Activo' },
+  ]);
+
+  const [licenses, setLicenses] = useState([
+    { client: 'Cliente Alpha', key: 'FES-2026-9812-X', expires: '31/12/2026' },
+    { client: 'Empresa Beta', key: 'FES-2026-4412-K', expires: '15/08/2027' },
+  ]);
+
+  // Modales interactivos
+  const [isAppModalOpen, setIsAppModalOpen] = useState(false);
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
+
+  const [newAppName, setNewAppName] = useState('');
+  const [newAppUrl, setNewAppUrl] = useState('');
+
+  const [newLicClient, setNewLicClient] = useState('');
+  const [newLicDate, setNewLicDate] = useState('');
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
@@ -16,11 +40,12 @@ export default function Page() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      if (res.ok) {
-        setStatusMsg('¡Consulta enviada! Te contactaremos pronto.');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatusMsg('¡Consulta enviada! Te contactaremos a la brevedad.');
         setFormData({ full_name: '', email: '', requirements: '' });
       } else {
-        setStatusMsg('Error al enviar la consulta. Intenta nuevamente.');
+        setStatusMsg(data.error || 'Error al enviar la consulta. Intenta nuevamente.');
       }
     } catch {
       setStatusMsg('Error de conexión con el servidor.');
@@ -29,142 +54,486 @@ export default function Page() {
     }
   };
 
+  const handleAddApp = (e) => {
+    e.preventDefault();
+    if (!newAppName.trim() || !newAppUrl.trim()) return;
+    setApps([...apps, { name: newAppName.trim(), url: newAppUrl.trim(), status: 'Activo' }]);
+    setNewAppName('');
+    setNewAppUrl('');
+    setIsAppModalOpen(false);
+  };
+
+  const handleAddLicense = (e) => {
+    e.preventDefault();
+    if (!newLicClient.trim() || !newLicDate.trim()) return;
+    const randomKey = 'FES-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000) + '-X';
+    setLicenses([...licenses, { client: newLicClient.trim(), key: randomKey, expires: newLicDate }]);
+    setNewLicClient('');
+    setNewLicDate('');
+    setIsLicenseModalOpen(false);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-brand-dark text-white">
+    <div className="bg-brand-dark text-brand-text font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-brand-accent selection:text-gray-900">
+      
       {/* Header */}
       <header className="sticky top-0 z-50 glass-card border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <a href="#hero" className="flex items-center space-x-3 group">
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-brand-accent p-0.5 group-hover:border-brand-cyan transition duration-300">
-              <img src="/assets/logo.png" alt="FEStudio Desarrollos Logo" className="w-full h-full object-cover rounded-full" />
+              <img 
+                src="/assets/logo.png" 
+                onError={(e) => { e.currentTarget.src = 'https://placehold.co/100x100/161d2f/10b981?text=FEStudio'; }} 
+                alt="FEStudio Desarrollos Logo" 
+                className="w-full h-full object-cover rounded-full" 
+              />
             </div>
             <div>
               <span className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-green-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">FEStudio</span>
               <span className="block text-xs font-semibold tracking-widest text-gray-400 -mt-1">desarrollos</span>
             </div>
           </a>
+
+          {/* Navigation Links Desktop */}
           <nav className="hidden md:flex space-x-8 text-sm font-medium items-center">
             <a href="#servicios" className="hover:text-brand-accent transition">Servicios</a>
+            <a href="#apps" className="hover:text-brand-cyan transition">Aplicaciones</a>
             <a href="#contacto" className="hover:text-brand-amber transition">Contacto</a>
             <Link to="/login" className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold transition shadow-lg">
-              Acceso Clientes
+              Acceso Dashboard
             </Link>
           </nav>
+
+          {/* Mobile menu button */}
+          <button 
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+            className="md:hidden text-gray-300 hover:text-white text-2xl p-2 focus:outline-none"
+            aria-label="Abrir menú"
+          >
+            <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+          </button>
         </div>
+
+        {/* Mobile Nav Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden glass-card border-t border-gray-800 px-4 pt-2 pb-6 space-y-3">
+            <a href="#servicios" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-accent">Servicios</a>
+            <a href="#apps" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-cyan">Aplicaciones</a>
+            <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-amber">Contacto</a>
+            <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-brand-accent font-bold">
+              Acceso Dashboard
+            </Link>
+          </div>
+        )}
       </header>
 
       <main className="flex-grow">
+        
         {/* Hero Section */}
         <section id="hero" className="relative py-20 lg:py-32 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-brand-dark to-brand-dark -z-10"></div>
-          <div className="max-w-7xl mx-auto px-4 text-center relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium mb-6">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Innovación & Desarrollo a Medida</span>
+            </div>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-6">
               Transformamos Ideas en <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400 bg-clip-text text-transparent">Software de Alto Impacto</span>
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-gray-300 mb-10">
-              Especialistas en arquitecturas robustas, aplicaciones web modernas y soluciones digitales a medida.
+              Especialistas en arquitecturas robustas, aplicaciones web modernas, paneles de gestión y soluciones digitales escalables para potenciar tu empresa.
             </p>
+            
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a href="https://wa.me/5493467441266" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-emerald-500 text-gray-900 font-bold hover:bg-emerald-400 transition transform hover:-translate-y-0.5 glow-effect">
+              <a 
+                href="https://wa.me/5493467441266?text=Hola%20FEStudio,%20quisiera%20consultar%20por%20un%20proyecto" 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-emerald-500 text-gray-900 font-bold hover:bg-emerald-400 transition transform hover:-translate-y-0.5 glow-effect"
+              >
                 <i className="fab fa-whatsapp text-xl mr-2"></i> Contactar por WhatsApp
               </a>
-              <a href="https://instagram.com/festudio.desarrollos" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-gray-700 bg-brand-card hover:bg-gray-800 text-white font-semibold transition">
+              <a 
+                href="https://instagram.com/festudio.desarrollos" 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-gray-700 bg-brand-card hover:bg-gray-800 text-white font-semibold transition"
+              >
                 <i className="fab fa-instagram text-xl mr-2 text-pink-500"></i> Síguenos en Instagram
               </a>
             </div>
           </div>
         </section>
 
-        {/* Sección de Servicios */}
-        <section id="servicios" className="py-20 border-t border-gray-800/80 bg-brand-card/30">
+        {/* Sección Servicios / Soluciones */}
+        <section id="servicios" className="py-16 bg-brand-dark/50 border-t border-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Nuestros Servicios</h2>
-              <p className="mt-4 text-gray-400 max-w-2xl mx-auto">Soluciones tecnológicas integrales diseñadas para impulsar el crecimiento de tu negocio.</p>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white">Nuestras Soluciones</h2>
+              <p className="text-gray-400 mt-2">Construimos ecosistemas digitales eficientes y personalizados</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="glass-card p-6 rounded-2xl border border-gray-800 hover:border-brand-accent/50 transition">
-                <div className="w-12 h-12 rounded-xl bg-brand-accent/20 flex items-center justify-center mb-4 text-brand-accent text-2xl">
-                  <i className="fas fa-laptop-code"></i>
+              <div className="glass-card p-8 rounded-2xl hover:border-emerald-500/50 transition group">
+                <div className="w-14 h-14 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                  <i className="fas fa-code"></i>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Desarrollo Web & SaaS</h3>
-                <p className="text-gray-400 text-sm">Plataformas interactivas, paneles de control y landing pages optimizadas con React, Next.js y Vite.</p>
+                <h3 className="text-xl font-bold text-white mb-3">Desarrollo Web & SaaS</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Plataformas escalables con tecnologías modernas (Python, Flask, Tailwind, Postgres), optimizadas para velocidad y respuesta.</p>
               </div>
 
-              <div className="glass-card p-6 rounded-2xl border border-gray-800 hover:border-brand-cyan/50 transition">
-                <div className="w-12 h-12 rounded-xl bg-brand-cyan/20 flex items-center justify-center mb-4 text-brand-cyan text-2xl">
+              <div className="glass-card p-8 rounded-2xl hover:border-cyan-500/50 transition group">
+                <div className="w-14 h-14 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                  <i className="fas fa-key"></i>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">Gestión de Licencias</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Sistemas seguros de autenticación, control de accesos, claves de producto y gestión de usuarios en tiempo real.</p>
+              </div>
+
+              <div className="glass-card p-8 rounded-2xl hover:border-amber-500/50 transition group">
+                <div className="w-14 h-14 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
                   <i className="fas fa-server"></i>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Arquitectura & APIs</h3>
-                <p className="text-gray-400 text-sm">Backends escalables, microservicios en Python/Flask y bases de datos seguras con PostgreSQL y Supabase.</p>
-              </div>
-
-              <div className="glass-card p-6 rounded-2xl border border-gray-800 hover:border-brand-amber/50 transition">
-                <div className="w-12 h-12 rounded-xl bg-brand-amber/20 flex items-center justify-center mb-4 text-brand-amber text-2xl">
-                  <i className="fas fa-shield-alt"></i>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Mantenimiento & Soporte</h3>
-                <p className="text-gray-400 text-sm">Monitoreo continuo, resolución ágil de incidencias mediante tickets de soporte y actualizaciones periódicas.</p>
+                <h3 className="text-xl font-bold text-white mb-3">Infraestructura & Docker</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">Despliegue automatizado con contenedores Docker, bases de datos integradas con Supabase y alto rendimiento.</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Formulario de Contacto / Presupuesto */}
-        <section id="contacto" className="py-20 bg-brand-dark/50 border-t border-gray-800/50">
-          <div className="max-w-3xl mx-auto px-4">
+        {/* Sección Aplicaciones / Demostración en Vivo */}
+        <section id="apps" className="py-20 border-t border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white">Solicita tu Presupuesto</h2>
-              <p className="text-gray-400 mt-2">Cuéntanos sobre tu proyecto y evaluaremos la mejor solución.</p>
+              <span className="text-cyan-400 text-sm font-semibold uppercase tracking-widest">Demostración en vivo</span>
+              <h2 className="text-3xl font-bold text-white mt-1">Panel de Control & Licencias</h2>
+              <p className="text-gray-400 mt-2">Mapeo de aplicaciones cliente y administración de accesos registrados.</p>
             </div>
-            <form onSubmit={handleContactSubmit} className="glass-card p-8 rounded-2xl space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input 
-                  type="text" required placeholder="Nombre completo" 
-                  value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-brand-accent" 
-                />
-                <input 
-                  type="email" required placeholder="Correo electrónico" 
-                  value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-brand-accent" 
-                />
+
+            {/* Sandbox Container */}
+            <div className="glass-card rounded-2xl p-6 border border-gray-700/60 shadow-2xl">
+              {/* Header / Controls */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-800">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    <i className="fas fa-chart-line text-emerald-400 mr-2"></i> Dashboard de Aplicaciones
+                  </h3>
+                  <p className="text-xs text-gray-400">Estado de la base de datos Supabase: <span className="text-emerald-400 font-semibold">Conectado</span></p>
+                </div>
+                <div className="flex space-x-3 w-full md:w-auto">
+                  <button 
+                    onClick={() => setIsAppModalOpen(true)} 
+                    className="flex-1 md:flex-initial px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-lg hover:bg-emerald-500/30 text-xs font-semibold transition"
+                  >
+                    <i className="fas fa-plus mr-1"></i> Nueva App
+                  </button>
+                  <button 
+                    onClick={() => setIsLicenseModalOpen(true)} 
+                    className="flex-1 md:flex-initial px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg hover:bg-cyan-500/30 text-xs font-semibold transition"
+                  >
+                    <i className="fas fa-key mr-1"></i> Generar Licencia
+                  </button>
+                </div>
               </div>
-              <textarea 
-                rows="4" required placeholder="Describe los requerimientos de tu app..." 
-                value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-brand-accent" 
-              ></textarea>
-              
-              {statusMsg && <p className="text-brand-accent text-sm text-center font-medium">{statusMsg}</p>}
-              
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full py-3 bg-brand-accent text-brand-dark font-bold rounded-lg hover:bg-emerald-400 transition glow-effect disabled:opacity-50"
+
+              {/* Data Tables Preview */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                {/* Apps List */}
+                <div className="bg-brand-dark/80 rounded-xl p-4 border border-gray-800">
+                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
+                    <span><i className="fas fa-cubes text-emerald-400 mr-2"></i> Aplicaciones Registradas</span>
+                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">{apps.length} Apps</span>
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold">
+                        <tr>
+                          <th className="p-2.5">Nombre</th>
+                          <th className="p-2.5">URL / Enlace</th>
+                          <th className="p-2.5">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {apps.map((app, idx) => (
+                          <tr key={idx}>
+                            <td className="p-2.5 font-semibold text-white">{app.name}</td>
+                            <td className="p-2.5">
+                              <a href={app.url} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
+                                {app.url}
+                              </a>
+                            </td>
+                            <td className="p-2.5">
+                              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full text-[10px]">
+                                {app.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Licenses List */}
+                <div className="bg-brand-dark/80 rounded-xl p-4 border border-gray-800">
+                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
+                    <span><i className="fas fa-id-card text-cyan-400 mr-2"></i> Licencias de Usuarios</span>
+                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">{licenses.length} Licencias</span>
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold">
+                        <tr>
+                          <th className="p-2.5">Cliente</th>
+                          <th className="p-2.5">Clave Licencia</th>
+                          <th className="p-2.5">Expira</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {licenses.map((lic, idx) => (
+                          <tr key={idx}>
+                            <td className="p-2.5 font-semibold text-white">{lic.client}</td>
+                            <td className="p-2.5 font-mono text-emerald-400">{lic.key}</td>
+                            <td className="p-2.5 text-gray-400">{lic.expires}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Sección Contacto: Canales Directos y Formulario */}
+        <section id="contacto" className="py-16 bg-brand-card/40 border-t border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold text-white mb-2">Canales de Contacto Directo</h2>
+            <p className="text-gray-400 mb-10">Estamos disponibles para resolver tus consultas y comenzar tu proyecto.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {/* Instagram */}
+              <a 
+                href="https://instagram.com/festudio.desarrollos" 
+                target="_blank" 
+                rel="noreferrer"
+                className="glass-card p-6 rounded-xl hover:border-pink-500/50 transition flex flex-col items-center group"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar Consulta'}
-              </button>
-            </form>
+                <i className="fab fa-instagram text-3xl text-pink-500 mb-3 group-hover:scale-110 transition"></i>
+                <span className="text-sm font-semibold text-gray-300">Instagram</span>
+                <span className="text-xs text-pink-400 mt-1">@festudio.desarrollos</span>
+              </a>
+
+              {/* WhatsApp */}
+              <a 
+                href="https://wa.me/5493467441266?text=Hola%20FEStudio,%20quisiera%20consultar%20por%20un%20proyecto" 
+                target="_blank" 
+                rel="noreferrer"
+                className="glass-card p-6 rounded-xl hover:border-emerald-500/50 transition flex flex-col items-center group"
+              >
+                <i className="fab fa-whatsapp text-3xl text-emerald-400 mb-3 group-hover:scale-110 transition"></i>
+                <span className="text-sm font-semibold text-gray-300">WhatsApp</span>
+                <span className="text-xs text-emerald-400 mt-1">+54 9 3467 441266</span>
+              </a>
+
+              {/* Email */}
+              <a 
+                href="mailto:festudio.desarrollos@gmail.com" 
+                className="glass-card p-6 rounded-xl hover:border-cyan-500/50 transition flex flex-col items-center group"
+              >
+                <i className="far fa-envelope text-3xl text-cyan-400 mb-3 group-hover:scale-110 transition"></i>
+                <span className="text-sm font-semibold text-gray-300">Correo Electrónico</span>
+                <span className="text-xs text-cyan-400 mt-1">festudio.desarrollos@gmail.com</span>
+              </a>
+            </div>
+
+            {/* Formulario de Presupuesto Conectado a la Base de Datos */}
+            <div className="mt-14 max-w-3xl mx-auto text-left">
+              <div className="text-center mb-8">
+                <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">Solicitud Online</span>
+                <h3 className="text-2xl font-bold text-white mt-1">Pide tu Presupuesto Personalizado</h3>
+                <p className="text-xs text-gray-400 mt-1">Detalla los requerimientos y te enviaremos una propuesta formal.</p>
+              </div>
+
+              <form onSubmit={handleContactSubmit} className="glass-card p-8 rounded-2xl space-y-4 border border-gray-700/60 shadow-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Nombre Completo</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ej: Martín Rodríguez" 
+                      value={formData.full_name} 
+                      onChange={e => setFormData({...formData, full_name: e.target.value})}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-brand-accent" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Correo Electrónico</label>
+                    <input 
+                      type="email" 
+                      required 
+                      placeholder="correo@ejemplo.com" 
+                      value={formData.email} 
+                      onChange={e => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-brand-accent" 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">Requerimientos del Proyecto</label>
+                  <textarea 
+                    rows="4" 
+                    required 
+                    placeholder="Describe las funcionalidades, objetivos y tiempos estimados de tu aplicación..." 
+                    value={formData.requirements} 
+                    onChange={e => setFormData({...formData, requirements: e.target.value})}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-brand-accent" 
+                  ></textarea>
+                </div>
+                
+                {statusMsg && (
+                  <p className="text-brand-accent text-xs text-center font-medium bg-emerald-500/10 py-2 rounded-lg border border-emerald-500/20">
+                    {statusMsg}
+                  </p>
+                )}
+                
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold rounded-xl transition glow-effect disabled:opacity-50 text-sm"
+                >
+                  {isSubmitting ? 'Enviando requerimientos...' : 'Enviar Solicitud de Presupuesto'}
+                </button>
+              </form>
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
       <footer className="bg-brand-dark border-t border-gray-800/80 py-8 text-center text-xs text-gray-500">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center space-x-2">
-             <img src="/assets/logo.png" alt="FEStudio Logo" className="w-6 h-6 rounded-full" />
-             <span>&copy; 2026 <strong>FEStudio Desarrollos</strong>.</span>
+            <img 
+              src="/assets/logo.png" 
+              onError={(e) => { e.currentTarget.src = 'https://placehold.co/50x50/161d2f/10b981?text=FE'; }} 
+              alt="FEStudio Logo" 
+              className="w-6 h-6 rounded-full" 
+            />
+            <span>&copy; 2026 <strong>FEStudio Desarrollos</strong>. Todos los derechos reservados.</span>
           </div>
-          <div className="flex space-x-4">
-            <a href="mailto:festudio.desarrollos@gmail.com" className="hover:text-cyan-400" title="Email"><i className="far fa-envelope text-lg"></i></a>
-            <a href="https://wa.me/5493467441266" target="_blank" rel="noreferrer" className="hover:text-emerald-400" title="WhatsApp"><i className="fab fa-whatsapp text-lg"></i></a>
-            <a href="https://instagram.com/festudio.desarrollos" target="_blank" rel="noreferrer" className="hover:text-pink-400" title="Instagram"><i className="fab fa-instagram text-lg"></i></a>
+          <div className="flex space-x-6">
+            <a href="https://instagram.com/festudio.desarrollos" target="_blank" rel="noreferrer" className="hover:text-pink-400 text-base" title="Instagram">
+              <i className="fab fa-instagram"></i>
+            </a>
+            <a href="https://wa.me/5493467441266" target="_blank" rel="noreferrer" className="hover:text-emerald-400 text-base" title="WhatsApp">
+              <i className="fab fa-whatsapp"></i>
+            </a>
+            <a href="mailto:festudio.desarrollos@gmail.com" className="hover:text-cyan-400 text-base" title="Correo">
+              <i className="far fa-envelope"></i>
+            </a>
           </div>
         </div>
       </footer>
+
+      {/* Modal Nueva App */}
+      {isAppModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="glass-card p-6 rounded-xl w-full max-w-md border border-gray-700 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Registrar Nueva Aplicación</h3>
+            <form onSubmit={handleAddApp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Nombre App</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Ej: FEStudio ERP" 
+                  value={newAppName}
+                  onChange={e => setNewAppName(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">URL Enlace</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="https://app.festudio.dev" 
+                  value={newAppUrl}
+                  onChange={e => setNewAppUrl(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6 pt-2 border-t border-gray-800">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAppModalOpen(false)} 
+                  className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 text-xs font-semibold transition"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-emerald-500 text-gray-900 rounded hover:bg-emerald-400 text-xs font-bold transition"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nueva Licencia */}
+      {isLicenseModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="glass-card p-6 rounded-xl w-full max-w-md border border-gray-700 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Generar Nueva Licencia</h3>
+            <form onSubmit={handleAddLicense} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Cliente / Usuario</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Nombre de empresa o cliente" 
+                  value={newLicClient}
+                  onChange={e => setNewLicClient(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Fecha Expiración</label>
+                <input 
+                  type="date" 
+                  required
+                  value={newLicDate}
+                  onChange={e => setNewLicDate(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" 
+                />
+              </div>
+              <div className="flex justify-end space-x-3 mt-6 pt-2 border-t border-gray-800">
+                <button 
+                  type="button" 
+                  onClick={() => setIsLicenseModalOpen(false)} 
+                  className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 text-xs font-semibold transition"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-cyan-500 text-gray-900 rounded hover:bg-cyan-400 text-xs font-bold transition"
+                >
+                  Generar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

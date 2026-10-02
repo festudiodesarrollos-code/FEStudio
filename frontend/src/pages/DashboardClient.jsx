@@ -94,7 +94,8 @@ export default function DashboardClient() {
   }, [profile, user]);
 
   useEffect(() => {
-    fetchClientData();
+    const timeoutId = setTimeout(fetchClientData, 0);
+    return () => clearTimeout(timeoutId);
   }, [fetchClientData]);
 
   const handleLogout = async () => {

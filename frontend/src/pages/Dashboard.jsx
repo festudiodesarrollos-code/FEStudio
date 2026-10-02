@@ -2,9 +2,15 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import DashboardClient from './DashboardClient';
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
+
+  // Si es un cliente regular, mostrar el DashboardClient especializado
+  if (profile && !profile.is_superuser) {
+    return <DashboardClient />;
+  }
 
   // Estados para Administrador
   const [adminData, setAdminData] = useState({ queries: [], tickets: [] });

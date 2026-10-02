@@ -9,16 +9,7 @@ export default function Page() {
   const [statusMsg, setStatusMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados para la demostración interactiva de Apps y Licencias (del template)
-  const [apps, setApps] = useState([
-    { name: 'FEStudio CRM', url: 'https://crm.festudio.dev', status: 'Activo' },
-    { name: 'GestionStock Pro', url: 'https://stock.festudio.dev', status: 'Activo' },
-  ]);
-
-  const [licenses, setLicenses] = useState([
-    { client: 'Cliente Alpha', key: 'FES-2026-9812-X', expires: '31/12/2026' },
-    { client: 'Empresa Beta', key: 'FES-2026-4412-K', expires: '15/08/2027' },
-  ]);
+ 
 
   // Modales interactivos
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
@@ -54,25 +45,7 @@ export default function Page() {
     }
   };
 
-  const handleAddApp = (e) => {
-    e.preventDefault();
-    if (!newAppName.trim() || !newAppUrl.trim()) return;
-    setApps([...apps, { name: newAppName.trim(), url: newAppUrl.trim(), status: 'Activo' }]);
-    setNewAppName('');
-    setNewAppUrl('');
-    setIsAppModalOpen(false);
-  };
-
-  const handleAddLicense = (e) => {
-    e.preventDefault();
-    if (!newLicClient.trim() || !newLicDate.trim()) return;
-    const randomKey = 'FES-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000) + '-X';
-    setLicenses([...licenses, { client: newLicClient.trim(), key: randomKey, expires: newLicDate }]);
-    setNewLicClient('');
-    setNewLicDate('');
-    setIsLicenseModalOpen(false);
-  };
-
+  
   return (
     <div className="bg-brand-dark text-brand-text font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-brand-accent selection:text-gray-900">
       
@@ -97,10 +70,10 @@ export default function Page() {
           {/* Navigation Links Desktop */}
           <nav className="hidden md:flex space-x-8 text-sm font-medium items-center">
             <a href="#servicios" className="hover:text-brand-accent transition">Servicios</a>
-            <a href="#apps" className="hover:text-brand-cyan transition">Aplicaciones</a>
+            
             <a href="#contacto" className="hover:text-brand-amber transition">Contacto</a>
             <Link to="/login" className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold transition shadow-lg">
-              Acceso Dashboard
+              Login
             </Link>
           </nav>
 
@@ -119,10 +92,10 @@ export default function Page() {
         {mobileMenuOpen && (
           <div className="md:hidden glass-card border-t border-gray-800 px-4 pt-2 pb-6 space-y-3">
             <a href="#servicios" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-accent">Servicios</a>
-            <a href="#apps" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-cyan">Aplicaciones</a>
+            
             <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-brand-amber">Contacto</a>
             <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-brand-accent font-bold">
-              Acceso Dashboard
+              Login
             </Link>
           </div>
         )}
@@ -202,111 +175,7 @@ export default function Page() {
           </div>
         </section>
 
-        {/* Sección Aplicaciones / Demostración en Vivo */}
-        <section id="apps" className="py-20 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <span className="text-cyan-400 text-sm font-semibold uppercase tracking-widest">Demostración en vivo</span>
-              <h2 className="text-3xl font-bold text-white mt-1">Panel de Control & Licencias</h2>
-              <p className="text-gray-400 mt-2">Mapeo de aplicaciones cliente y administración de accesos registrados.</p>
-            </div>
-
-            {/* Sandbox Container */}
-            <div className="glass-card rounded-2xl p-6 border border-gray-700/60 shadow-2xl">
-              {/* Header / Controls */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-800">
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center">
-                    <i className="fas fa-chart-line text-emerald-400 mr-2"></i> Dashboard de Aplicaciones
-                  </h3>
-                  <p className="text-xs text-gray-400">Estado de la base de datos Supabase: <span className="text-emerald-400 font-semibold">Conectado</span></p>
-                </div>
-                <div className="flex space-x-3 w-full md:w-auto">
-                  <button 
-                    onClick={() => setIsAppModalOpen(true)} 
-                    className="flex-1 md:flex-initial px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-lg hover:bg-emerald-500/30 text-xs font-semibold transition"
-                  >
-                    <i className="fas fa-plus mr-1"></i> Nueva App
-                  </button>
-                  <button 
-                    onClick={() => setIsLicenseModalOpen(true)} 
-                    className="flex-1 md:flex-initial px-4 py-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg hover:bg-cyan-500/30 text-xs font-semibold transition"
-                  >
-                    <i className="fas fa-key mr-1"></i> Generar Licencia
-                  </button>
-                </div>
-              </div>
-
-              {/* Data Tables Preview */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-                {/* Apps List */}
-                <div className="bg-brand-dark/80 rounded-xl p-4 border border-gray-800">
-                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
-                    <span><i className="fas fa-cubes text-emerald-400 mr-2"></i> Aplicaciones Registradas</span>
-                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">{apps.length} Apps</span>
-                  </h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-gray-300">
-                      <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold">
-                        <tr>
-                          <th className="p-2.5">Nombre</th>
-                          <th className="p-2.5">URL / Enlace</th>
-                          <th className="p-2.5">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {apps.map((app, idx) => (
-                          <tr key={idx}>
-                            <td className="p-2.5 font-semibold text-white">{app.name}</td>
-                            <td className="p-2.5">
-                              <a href={app.url} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
-                                {app.url}
-                              </a>
-                            </td>
-                            <td className="p-2.5">
-                              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full text-[10px]">
-                                {app.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Licenses List */}
-                <div className="bg-brand-dark/80 rounded-xl p-4 border border-gray-800">
-                  <h4 className="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
-                    <span><i className="fas fa-id-card text-cyan-400 mr-2"></i> Licencias de Usuarios</span>
-                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">{licenses.length} Licencias</span>
-                  </h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-gray-300">
-                      <thead className="bg-gray-800/50 text-gray-400 uppercase font-semibold">
-                        <tr>
-                          <th className="p-2.5">Cliente</th>
-                          <th className="p-2.5">Clave Licencia</th>
-                          <th className="p-2.5">Expira</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {licenses.map((lic, idx) => (
-                          <tr key={idx}>
-                            <td className="p-2.5 font-semibold text-white">{lic.client}</td>
-                            <td className="p-2.5 font-mono text-emerald-400">{lic.key}</td>
-                            <td className="p-2.5 text-gray-400">{lic.expires}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+          
         {/* Sección Contacto: Canales Directos y Formulario */}
         <section id="contacto" className="py-16 bg-brand-card/40 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -438,101 +307,6 @@ export default function Page() {
           </div>
         </div>
       </footer>
-
-      {/* Modal Nueva App */}
-      {isAppModalOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="glass-card p-6 rounded-xl w-full max-w-md border border-gray-700 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-4">Registrar Nueva Aplicación</h3>
-            <form onSubmit={handleAddApp} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Nombre App</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="Ej: FEStudio ERP" 
-                  value={newAppName}
-                  onChange={e => setNewAppName(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">URL Enlace</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="https://app.festudio.dev" 
-                  value={newAppUrl}
-                  onChange={e => setNewAppUrl(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" 
-                />
-              </div>
-              <div className="flex justify-end space-x-3 mt-6 pt-2 border-t border-gray-800">
-                <button 
-                  type="button" 
-                  onClick={() => setIsAppModalOpen(false)} 
-                  className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 text-xs font-semibold transition"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-emerald-500 text-gray-900 rounded hover:bg-emerald-400 text-xs font-bold transition"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Nueva Licencia */}
-      {isLicenseModalOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="glass-card p-6 rounded-xl w-full max-w-md border border-gray-700 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-4">Generar Nueva Licencia</h3>
-            <form onSubmit={handleAddLicense} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Cliente / Usuario</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="Nombre de empresa o cliente" 
-                  value={newLicClient}
-                  onChange={e => setNewLicClient(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Fecha Expiración</label>
-                <input 
-                  type="date" 
-                  required
-                  value={newLicDate}
-                  onChange={e => setNewLicDate(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" 
-                />
-              </div>
-              <div className="flex justify-end space-x-3 mt-6 pt-2 border-t border-gray-800">
-                <button 
-                  type="button" 
-                  onClick={() => setIsLicenseModalOpen(false)} 
-                  className="px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 text-xs font-semibold transition"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-cyan-500 text-gray-900 rounded hover:bg-cyan-400 text-xs font-bold transition"
-                >
-                  Generar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

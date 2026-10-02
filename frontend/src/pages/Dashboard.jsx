@@ -5,10 +5,22 @@ import { Link } from 'react-router-dom';
 import DashboardClient from './DashboardClient';
 
 export default function Dashboard() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
 
-  // Si es un cliente regular, mostrar el DashboardClient especializado
-  if (profile && !profile.is_superuser) {
+  // Si aún está cargando la verificación de permisos o perfil
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium">Verificando accesos y cargando tu panel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si es un cliente regular (is_superuser === false), mostrar estrictamente el DashboardClient
+  if (!profile.is_superuser) {
     return <DashboardClient />;
   }
 

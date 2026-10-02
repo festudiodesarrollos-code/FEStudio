@@ -6,8 +6,8 @@ export function ProtectedRoute({ children, requireSuperUser = false, requireClie
 
   if (loading) return <div>Cargando...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (requireSuperUser && !profile?.is_superuser) return <Navigate to="/dashboard/client" replace />;
-  if (requireClient && profile?.is_superuser) return <Navigate to="/dashboard" replace />;
+  if (requireClient && !profile?.is_superuser) return <Navigate to="/dashboard/client" replace />;
+  if (requireSuperUser && profile?.is_superuser) return <Navigate to="/dashboard" replace />;
 
   return children;
 }
